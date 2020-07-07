@@ -85,9 +85,9 @@ def keep_playing(player_money):
             restart = str(input('Do you want to loose more money? (Y/N)'))
         except:
             print('Letters please!!')
-        if restart == 'Y' or restart == 'y':
+        if restart.lower() == 'y':
             restart = True
-        elif restart == 'N' or restart == 'n':
+        elif restart.lower() == 'n':
             restart = False
             print('Really??? If you want to loose money again you know where to find us =)')
         else:
