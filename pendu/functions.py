@@ -12,44 +12,59 @@ def scores():
 def set_player_name():
     """Ask the player his name"""
     try:
-        player_name = str(input("Hello and welcome to LE PENDU! Who are you?")).lower()
+        player_name = str(input("Hello and welcome to LE PENDU! Who are you?"))
     except ValueError: #not very usefull here I guess
         print("I didn't catch your name, can you try again please?(only letters)")
         set_player_name()
     return player_name
 
 
-def set_player(player_name, path_to_score):
-    #refaire tout ça je ne pense pas que ce soit très ouf d'utiliser les exceptions comme ça. Il faut vérifier qu'un fichier contienne un objet avant d'essayer de le load.
-    os.chdir(path_to_score)
-    # with open('scores', 'wb') as scores_file:
-    #     score_dict_writter = pickle.Pickler(scores_file)
-    #     score_dict_writter.dump({player_name: 12})
-    with open('scores', 'rb') as scores_file:
+def set_player(player_name, path_to_score_folder, scores_file_name):
+
+    check_scores_file(path_to_score_folder, scores_file_name)
+
+    with open(scores_file_name, 'rb') as scores_file:
         score_dict_reader = pickle.Unpickler(scores_file)
         score_dict = score_dict_reader.load()
-        try:
-            score = score_dict[player_name]
-        except KeyError:
-            with open('scores', 'wb') as scores_file:
-                score_dict_writter = pickle.Pickler(scores_file)
-                score_dict[player_name] = 0
-                score_dict_writter.dump(score_dict)
-            score = set_player(player_name, path_to_score)
+        if isinstance(score_dict, dict):
+            for key in score_dict.keys():
+                if player_name == key:
+                    return score_dict[player_name]
 
-    return score
+    with open(scores_file_name, 'wb') as scores_file:
+        score_dict_writter = pickle.Pickler(scores_file)
+        score_dict[player_name] = 0
+        score_dict_writter.dump(score_dict)
+
+
+    return score_dict[player_name]
+
+
+def check_scores_file(path_to_score_folder, scores_file_name):
+    os.chdir(path_to_score_folder)
+    if not os.path.isfile(scores_file_name):
+        with open(scores_file_name, 'wb') as scores_file:
+            score_dict_writter = pickle.Pickler(scores_file)
+            score_dict = {}
+            score_dict_writter.dump(score_dict)
+    return None
+
+
+def set_player_score():
+    return None
 
 
 player_name = set_player_name()
 print("Your name is: {}".format(player_name))
 
 path_to_score = 'C:/Users/Cobra/PycharmProjects/Training_OCR/pendu'
+scores_file_name = 'scores'
 
-player_score = set_player(player_name, path_to_score)
+player_score = set_player(player_name, path_to_score, scores_file_name)
 
 print(player_score)
 
-with open('scores', 'rb') as scores_file:
+with open(scores_file_name, 'rb') as scores_file:
     score_dict_reader = pickle.Unpickler(scores_file)
     score_dict = score_dict_reader.load()
     print(score_dict)
