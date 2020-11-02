@@ -20,29 +20,31 @@ def set_player_name():
 
 
 def set_player(player_name, path_to_score_folder, scores_file_name):
-
+    """Returns the player's actual score given his name. If it's a new player adds the player name to the players dict
+    and set his score to 0"""
     check_scores_file(path_to_score_folder, scores_file_name)
 
-    with open(scores_file_name, 'rb') as scores_file:
-        score_dict_reader = pickle.Unpickler(scores_file)
-        score_dict = score_dict_reader.load()
-        if isinstance(score_dict, dict):
-            for key in score_dict.keys():
-                if player_name == key:
-                    return score_dict[player_name]
+    score_dict = read_scores_dict(scores_file_name)
+    if isinstance(score_dict, dict):
+        for key in score_dict.keys():
+            if player_name == key:
+                return score_dict[player_name]
 
-    with open(scores_file_name, 'wb') as scores_file:
-        score_dict_writter = pickle.Pickler(scores_file)
-        score_dict[player_name] = 0
-        score_dict_writter.dump(score_dict)
-
+    write_scores_dict(scores_file_name, player_name, 0, score_dict)
 
     return score_dict[player_name]
 
 
 def check_scores_file(path_to_score_folder, scores_file_name):
+    """Check the existence of the scores file and create an empty dictionary if the file is empty. If it doesn't exist
+    creates it and creates en empty dictionary."""
     os.chdir(path_to_score_folder)
     if not os.path.isfile(scores_file_name):
+        with open(scores_file_name, 'wb') as scores_file:
+            score_dict_writter = pickle.Pickler(scores_file)
+            score_dict = {}
+            score_dict_writter.dump(score_dict)
+    elif not os.stat(scores_file_name).st_size > 0:
         with open(scores_file_name, 'wb') as scores_file:
             score_dict_writter = pickle.Pickler(scores_file)
             score_dict = {}
@@ -50,8 +52,27 @@ def check_scores_file(path_to_score_folder, scores_file_name):
     return None
 
 
-def set_player_score(player_name, score):
+def read_scores_dict(scores_file_name):
+    """Read the scores dictionnary in the scores file"""
+    with open(scores_file_name, 'rb') as scores_file:
+        score_dict_reader = pickle.Unpickler(scores_file)
+        score_dict = score_dict_reader.load()
+    return score_dict
+
+
+def write_scores_dict(scores_file_name, player_name, score, score_dict):
+    """Write the score of a player in the scores dictionnary file"""
+    with open(scores_file_name, 'wb') as scores_file:
+        score_dict_writter = pickle.Pickler(scores_file)
+        score_dict[player_name] = score
+        score_dict_writter.dump(score_dict)
+    return None
+
+
+def set_player_score(player_name, score, scores_file_name):
     """Modify the score of a player (score is the score actualised)"""
+    score_dict = read_scores_dict(scores_file_name)
+    write_scores_dict(scores_file_name, player_name, score, score_dict)
     return None
 
 
@@ -91,6 +112,14 @@ print("Your name is: {}".format(player_name))
 player_score = set_player(player_name, path_to_score, scores_file_name)
 
 print(player_score)
+
+with open(scores_file_name, 'rb') as scores_file:
+    score_dict_reader = pickle.Unpickler(scores_file)
+    score_dict = score_dict_reader.load()
+    print(score_dict)
+
+
+set_player_score('bobi', 2, scores_file_name)
 
 with open(scores_file_name, 'rb') as scores_file:
     score_dict_reader = pickle.Unpickler(scores_file)
